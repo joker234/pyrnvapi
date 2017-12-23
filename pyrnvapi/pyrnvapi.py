@@ -94,7 +94,7 @@ class RNVStartInfoApi:
         r"""Similar to getlinepackage, but more specific for a single line
         :param lineid: id of the specific line
         :param timepoint: time from time package
-        :param tourtype: '452' or '454' type can be extracted from stationmonitor attribute kindOfTour
+        :param tourtype: "452" or "454" type can be extracted from stationmonitor attribute kindOfTour
         :param tourid: id of the tour
         :param hafas: station id
         :param stopindex: (optional) default is 0, display all stops from the beginning of the route
