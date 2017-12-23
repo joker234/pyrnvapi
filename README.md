@@ -11,6 +11,6 @@ cd pyrnvapi
 pip install .
 ```
 ## License
-This project uses the REST API Start.Info from Rhein-Neackar-Verkehr GmbH. 
-That API is released under dl-de/by-2-0. See https://www.govdata.de/dl-de/by-2-0 for more information
+This project uses the REST Start.Info API from Rhein-Neackar-Verkehr GmbH.  
+That API is released under dl-de/by-2-0. See https://www.govdata.de/dl-de/by-2-0 for more information.  
 URL to Start.Info API: https://opendata.rnv-online.de/startinfo-api
