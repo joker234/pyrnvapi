@@ -150,7 +150,7 @@ class RNVStartInfoApi:
 
         return json.loads(r.text)
 
-    def getstationinfo(self, lines, departuretime, hafas=""):
+    def getstationinfo(self, lines="", departuretime="", hafas=""):
         r"""Get current information for specific lines at station at timepoint time
         :param lines: semicolon seperated lines (if more than one)
         :param hafas: (optional) station id to get info for a specific station
@@ -158,10 +158,11 @@ class RNVStartInfoApi:
         :return: json response StationInfoTransfer
         :rtype: json dict"""
 
-        params = "lines=" + lines + "&departureTime=" + departuretime
-
-        if hafas != "":
-            params += "&hafasID=" + hafas
+        params = ""
+        if (lines != "") and (departuretime != ""):
+            params += "lines=" + lines + "&departureTime=" + departuretime
+            if hafas != "":
+                params += "&hafasID=" + hafas
 
         basereq = "/regions/rnv/modules/info/station"
         r = requests.get(self.baseurl + basereq, headers=self.headers, params=params)
