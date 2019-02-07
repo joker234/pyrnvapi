@@ -38,8 +38,11 @@ class RNVStartInfoApi:
         :return: json response StationPackage
         :rtype: json dict"""
 
+        if regionid == "":
+            raise Exception("Not a valid regionid.")
+
         basereq = "/regions/rnv/modules/stations/packages/"
-        basereq += regionid
+        basereq += str(regionid)
 
         r = requests.get(self.baseurl + basereq, headers=self.headers)
 
@@ -65,7 +68,7 @@ class RNVStartInfoApi:
 
         return json.loads(r.text)
 
-    def getstationmonitor(self, hafas, timepoint="null", mode="DEP", poles="", needplatformdetail="true"):
+    def getstationmonitor(self, hafas="", timepoint="null", mode="DEP", poles="", needplatformdetail="true"):
         r"""Request info about a station, eg. arrival or depature times
         :param hafas: station id
         :param time: from time package list information from timepoint
@@ -75,10 +78,13 @@ class RNVStartInfoApi:
         :return: json response Journey
         :rtype: json dict"""
 
+        if hafas == "" or mode == "" or needplatformdetail == "":
+            raise Exception("Not a valid hafas or mode or needplatfromdetail.")
+
         if timepoint != "null":
             timepoint = time.strftime("%Y-%m-%d+%H:%M", timepoint)
 
-        params = "hafasID=" + hafas + "&time=" + timepoint + \
+        params = "hafasID=" + str(hafas) + "&time=" + timepoint + \
                  "&mode=" + mode + \
                  "&needPlatformDetail=" + needplatformdetail
 
@@ -90,7 +96,7 @@ class RNVStartInfoApi:
 
         return json.loads(r.text)
 
-    def getnextstops(self, lineid, timepoint, tourtype, tourid, hafas, stopindex="0"):
+    def getnextstops(self, lineid="", timepoint="", tourtype="", tourid="", hafas="", stopindex="0"):
         r"""Similar to getlinepackage, but more specific for a single line
         :param lineid: id of the specific line
         :param timepoint: time from time package
@@ -102,11 +108,14 @@ class RNVStartInfoApi:
         :return: json response LineJourney
         :rtype: json dict"""
 
+        if lineid == "" or timepoint == "" or tourtype == "" or tourid == "" or hafas == "" or stopindex == "":
+            raise Exception("Not a valid lineid or timepoint or tourtype or tourid or hafas or stopindex.")
+
         timepoint = time.strftime("%Y-%m-%d+%H:%M", timepoint)
 
-        params = "hafasID=" + hafas + "&time=" + timepoint + \
-                 "&lineID=" + lineid + "&stopIndex=" + stopindex + \
-                 "&tourType=" + tourtype + "&tourID=" + tourid
+        params = "hafasID=" + str(hafas) + "&time=" + timepoint + \
+                 "&lineID=" + str(lineid) + "&stopIndex=" + str(stopindex) + \
+                 "&tourType=" + tourtype + "&tourID=" + str(tourid)
 
         basereq = "/regions/rnv/modules/lines"
         r = requests.get(self.baseurl + basereq, headers=self.headers, params=params)
@@ -123,13 +132,16 @@ class RNVStartInfoApi:
 
         return json.loads(r.text)
 
-    def getticker(self, lines):
+    def getticker(self, lines=""):
         r"""Get current ticker for affected lines
         :param lines: semicolon seperated list of lines
         :return: json response NewsEntry
         :rtype: json dict"""
 
-        params = "lines=" + lines
+        if lines == "":
+            raise Exception("No valid lines.")
+
+        params = "lines=" + str(lines)
 
         basereq = "/regions/rnv/modules/ticker"
         r = requests.get(self.baseurl + basereq, headers=self.headers, params=params)
@@ -143,7 +155,10 @@ class RNVStartInfoApi:
         :return: json response CanceledLineTransfer
         :rtype: json dict"""
 
-        params = "line=" + lineid + "&departureTime=" + departuretime
+        if lineid == "" or departuretime == "":
+            raise Exception("Not a valid lineid or departuretime.")
+
+        params = "line=" + str(lineid) + "&departureTime=" + departuretime
 
         basereq = "/regions/rnv/modules/canceled/line"
         r = requests.get(self.baseurl + basereq, headers=self.headers, params=params)
@@ -158,11 +173,14 @@ class RNVStartInfoApi:
         :return: json response StationInfoTransfer
         :rtype: json dict"""
 
+        if lines == "" or departuretime == "":
+            raise Exception("Not a valid departuretime or lines.")
+
         params = ""
         if (lines != "") and (departuretime != ""):
-            params += "lines=" + lines + "&departureTime=" + departuretime
+            params += "lines=" + str(lines) + "&departureTime=" + str(departuretime)
             if hafas != "":
-                params += "&hafasID=" + hafas
+                params += "&hafasID=" + str(hafas)
 
         basereq = "/regions/rnv/modules/info/station"
         r = requests.get(self.baseurl + basereq, headers=self.headers, params=params)
@@ -177,12 +195,12 @@ class RNVStartInfoApi:
         """
 
         if stationid == "":
-            raise Exception("Not a valid stationid")
+            raise Exception("Not a valid stationid.")
 
         params = ""
 
         basereq = "/regions/rnv/modules/stations/detail"
-        params += "stationId=" + stationid
+        params += "stationId=" + str(stationid)
 
         r = requests.get(self.baseurl + basereq, headers=self.headers, params=params)
 
@@ -196,14 +214,11 @@ class RNVStartInfoApi:
         :return: json response JourneyInfoTransfer
         :rtype: json dict"""
 
-        if hafas == "" and departuretime == "":
-            raise Exception("Not a valid combination!")
-
         params = ""
         if hafas == "":
             params += "departureTime=" + departuretime
         else:
-            params += "hafasID=" + hafas
+            params += "hafasID=" + str(hafas)
             if departuretime != "":
                 params += "&departureTime=" + departuretime
             if poles != "":
@@ -223,6 +238,9 @@ class RNVStartInfoApi:
         :return: json response MapEntity
         :rtype: json dict"""
 
+        if thumbnailsize == "" or format == "":
+            raise Exception("Not a valid thumbnailsize or format.")
+
         params = "thumbnailSize=" + thumbnailsize + "&format=" + format
 
         basereq = "/regions/rnv/modules/maps"
@@ -232,7 +250,7 @@ class RNVStartInfoApi:
 
     def __init__(self, apitoken=""):
         if apitoken == "":
-            raise Exception("apitoken not set!")
+            raise Exception("APItoken not set!")
 
         self.API_TOKEN = apitoken
         self.headers = {"RNV_API_TOKEN": self.API_TOKEN,
