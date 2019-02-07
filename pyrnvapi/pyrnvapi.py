@@ -169,6 +169,25 @@ class RNVStartInfoApi:
 
         return json.loads(r.text)
 
+    def getstationdetail(self, stationid=""):
+        r""""Get information about the specified station
+        :param stationid: station id
+        :return: json response StationDetail
+        :rtype: json dict
+        """
+
+        if stationid == "":
+            raise Exception("Not a valid stationid")
+
+        params = ""
+
+        basereq = "/regions/rnv/modules/stations/detail"
+        params += "stationId=" + stationid
+
+        r = requests.get(self.baseurl + basereq, headers=self.headers, params=params)
+
+        return json.loads(r.text)
+
     def getjourneyinfo(self, hafas="", poles="", departuretime=""):
         r"""Get current information about journey. Similar to ticker
         :param hafas: (optional) station id
@@ -181,7 +200,7 @@ class RNVStartInfoApi:
             raise Exception("Not a valid combination!")
 
         params = ""
-        if hafas ==  "":
+        if hafas == "":
             params += "departureTime=" + departuretime
         else:
             params += "hafasID=" + hafas
