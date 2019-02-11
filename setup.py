@@ -7,5 +7,4 @@ setup(name="pyrnvapi",
       author = "Alexander Stepanov",
       author_email = "keks+github@al3xst.de",
       license = "MIT",
-      packages = ["pyrnvapi"],
-      zip_safe = False)
+      packages = ["pyrnvapi"])
