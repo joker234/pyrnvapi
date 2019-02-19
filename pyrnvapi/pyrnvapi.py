@@ -164,15 +164,7 @@ class RNVStartInfoApi:
 
         return self.sendrequest(basereq)
 
-    def getstationmonitor(self, hafas="", timepoint="null", mode="DEP", poles="", needplatformdetail="true"):
-        r"""Request info about a station, eg. arrival or depature times
-        :param hafas: station id
-        :param time: from time package list information from timepoint
-        :param mode: default is DEP for departures, ARR is for arrival
-        :param poles: comma separated list of poles, to restrict information about the station
-        :param needplatformdetail: true or false, on true prints the poles at the output
-        :return: json response Journey
-        :rtype: json dict"""
+    def getstationmonitor(self, hafas, timepoint, mode="DEP", poles=[], needplatformdetail="true"):
         """Request info about a station, eg. arrival or departure times
         
         Parameters
@@ -188,58 +180,120 @@ class RNVStartInfoApi:
         ------
         json dict: `dict`
             Collection of Journey-Objects with Departure-Objects:
-            - ``time``: Timepoint of request `str`.
-            - ``shortlabel``: `str`.
-            - ``projectedtime``: `str`.
-            - ``label``: `str`.
-            - ``icon``: `str`.
-            - ``color``: `str`.
-            - ``otherProjectedTimes``: `str`.
-            - ``pastRequestText``: `str`.
-            - ``ticker``: `str`.
-            - ``updateIterations``: `str`.
-            - ``updateTime``: `str`.
-            - ``listOfDepartures``: `str`.
-            - ``stationInfos``: `str`.
+
+            - ``time``: Timepoint of request (``str``).
+            - ``shortlabel``: Short description of the station monitor (``str``).
+            - ``projectedtime``: Contains the prognosed time (``str``).
+            - ``label``: Label of the station monitor (``str``).
+            - ``icon``: Name of the image which should be displayed to the client (``str``).
+            - ``color``: Color which should be displayed to the client (``str``).
+            - ``otherProjectedTimes``: Is here for backwards compatibility (``str``).
+            - ``pastRequestText``: Contains a note if the request was made in the past (``str``).
+            - ``ticker``: A Ticker message, if available, enclosed by three '*'-characters. Multiple messages are
+             concatenated and seperated by three '*'-characters (``str``).
+            - ``updateIterations``: Is here for backwards compatibility (``str``).
+            - ``updateTime``: Is here for backwards compatibility (``str``).
+            - ``listOfDepartures``: Contains a list of departures (``list` of `dict`)`:
+                - ``differenceTime``: Difference in minutes between departure time and request time. Can be used to 
+                 display "Departs in X minutes" (``str``).
+                - ``tourId``: Id of the tour 
+                 (Is not compatible with VDV452 and VDV454. Please consult public rnv docu for more information.) (``str``).
+                - ``kindOfTour``: One of the following values (``str``):
+                 "452" - Target departure time 
+                 "454REFAUS" - Daily updated target departure time
+                 "454AUS" - Actual departure time .
+                - ``foreignLine``: If the line does not belong to the RNV ("true" or "false") (``str``).
+                - ``newsAvailable``: If news are available for this tour ("true" or "false") (``str``).
+                - ``positionInTour``: Position of the stop in the tour (``str``).
+                - ``lineId``: Id of the line (``str``).
+                - ``transportation``: Transportation method of this line/tour (``str``):
+                 "STRAB" - Tram 
+                 "KOM" - Bus
+                 "WEBU" - Transportation by "Weinheimer Busunternehmen GmbH".
+                - ``platform``: Platform of the station where the tour stops (``str``).
+                - ``status``: State of the tour (``str``):
+                 "OK" - The tour takes place 
+                 "CANCELLED" - The tour is cancelled .
+                - ``statusNote``: A note of this tour (``str``).
+            - ``stationInfos``: Contains a list of station informations (``list`` of ``dict``):
+                - ``id``: Id of the element (``str``).
+                - ``title``: Title of the station information (``str``).
+                - ``text``: Content of the station information (``str``).
+                - ``lineId``: Id of the affected line (``str``).
+                - ``stationsIds``: Ids of all affected stations (``list` of `str``).
+                - ``stationsNames``: Names of all affected stations (``list` of `str``).
+                - ``url``: URL that can be filled for the station information (``str``).
+                - ``author``: Author of the station information (``str``).
+                - ``created``: Date when this information was created (``date``).
+                - ``validFrom``: Date since when this information will be valid (``date``).
+                - ``validTo``: Date until this information will be valid (``date``).
+                - ``displayFrom``: Date since when this information will be displayed (``date``).
+                - ``displayTo``: Date until this information will be displayed (``date``).
         """
 
-        if hafas == "" or mode == "" or needplatformdetail == "":
+        if not timepoint or not isinstance(timepoint, time):
+            raise ValueError("Time not specified or supplied in wrong format (Expected time object)")
+
+        if not isinstance(hafas, str) or not isinstance(mode, str) or not isinstance(needplatformdetail, str):
             raise ValueError("Not a valid hafas or mode or needplatfromdetail.")
 
-        if timepoint != "null":
-            timepoint = time.strftime("%Y-%m-%d+%H:%M", timepoint)
+        # check if poles is a list of strings
+        if poles and not (isinstance(poles, list) and all(isinstance(elem, str) for elem in poles)):
+            raise ValueError("Poles should be a list of strings.")
 
-        params = "hafasID=" + str(hafas) + "&time=" + timepoint + \
+        timepoint = time.strftime("%Y-%m-%d+%H:%M", timepoint)
+
+        params = "hafasID=" + hafas + "&time=" + timepoint + \
                  "&mode=" + mode + \
                  "&needPlatformDetail=" + needplatformdetail
 
-        if poles != "":
-            params += "&poles=" + poles
+        if poles:
+            params += "&poles=" + ",".join(poles)
 
         basereq = "/regions/rnv/modules/stationmonitor/element"
 
         return self.sendrequest(basereq, params)
 
-    def getnextstops(self, lineid="", timepoint="", tourtype="", tourid="", hafas="", stopindex="0"):
-        r"""Similar to getlinepackage, but more specific for a single line
-        :param lineid: id of the specific line
-        :param timepoint: time from time package
-        :param tourtype: "452" or "454" type can be extracted from stationmonitor attribute kindOfTour
-        :param tourid: id of the tour
-        :param hafas: station id
-        :param stopindex: (optional) default is 0, display all stops from the beginning of the route
-        other value x -> skip the first x stops
-        :return: json response LineJourney
-        :rtype: json dict"""
+    def getnextstops(self, lineid, timepoint, tourtype, tourid, hafas, stopindex="0"):
+        """Request the following stops of a specified line
 
-        if lineid == "" or timepoint == "" or tourtype == "" or tourid == "" or hafas == "" or stopindex == "":
+        Parameters
+        ----------
+        lineid : id of the specified line `str`.
+        timepoint : Timepoint for the requested stops `str`.
+        tourtype : Type of the tour ("452" or "454") `str`.
+        tourid : id of the tour `str`.
+        hafas : Id of the station `str`.
+        stopindex : 0 from the first stop, or any other number if the line is already moving and the next X stops
+         should not be displayed `str`.
+
+        Returns
+        -------
+        json dict: `dict`
+            Collection of lineJourney-Objects:
+            - ``lineId``: Id of the line (``str``).
+            - ``ticker``: Is only filled when used by getnextstops (``str``).
+            - ``validFromIndex``: Index of the next station (``str``).
+            - ``timeList``: Timepoints of the actual departure time at the next stations (``list`` of ``str``).
+            - ``stopListIds``: Stations names of the next stations (``list`` of ``str``).
+            - ``predictedTimeList``: Timepoints when the line should be departing at the next stations
+             (``list`` of ``str``).
+            - ``stationsIDs``: Ids of the next stations (``str``).
+            - ``directions``: Endstations of the tour (``str``).
+        """
+
+        if not timepoint or not isinstance(timepoint, time):
+            raise ValueError("Time not specified or supplied in wrong format (Expected time object)")
+
+        if not isinstance(lineid, str) or not isinstance(tourid, str) or not isinstance(hafas, str) or \
+                not (tourtype == "452" or tourtype == "454"):
             raise ValueError("Not a valid lineid or timepoint or tourtype or tourid or hafas or stopindex.")
 
         timepoint = time.strftime("%Y-%m-%d+%H:%M", timepoint)
 
-        params = "hafasID=" + str(hafas) + "&time=" + timepoint + \
-                 "&lineID=" + str(lineid) + "&stopIndex=" + str(stopindex) + \
-                 "&tourType=" + tourtype + "&tourID=" + str(tourid)
+        params = "hafasID=" + hafas + "&time=" + timepoint + \
+                 "&lineID=" + lineid + "&stopIndex=" + stopindex + \
+                 "&tourType=" + tourtype + "&tourID=" + tourid
 
         basereq = "/regions/rnv/modules/lines"
 
