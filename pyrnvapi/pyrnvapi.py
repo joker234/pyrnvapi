@@ -1,6 +1,6 @@
 import requests
 import json
-import time
+import datetime
 import inspect
 
 
@@ -51,9 +51,9 @@ class RNVStartInfoApi:
 
         Parameters
         ----------
-        timestationpackage : `struct_time`
+        timestationpackage : `datetime.date`
             timepoint from last update of station package
-        timelinepackage : `struct_time`
+        timelinepackage : `datetime.date`
             timepoint from last update of line package
         timeunused : `str`
             this parameter is currently unused, but required. We are using the values from the documentations example.
@@ -73,17 +73,17 @@ class RNVStartInfoApi:
             - ``elementID``: ElementId in response dict (``str``).
         """
 
-        if not isinstance(timestationpackage, time.struct_time):
-            raise TypeError("timestationpackage has to be a time.struct_time object.")
-        if not isinstance(timelinepackage, time.struct_time):
-            raise TypeError("timelinepackage has to be a time.struct_time object.")
+        if not isinstance(timestationpackage, datetime.date):
+            raise TypeError("timestationpackage has to be a  datetime.date object.")
+        if not isinstance(timelinepackage, datetime.date):
+            raise TypeError("timelinepackage has to be a  datetime.date object.")
         if not isinstance(timeunused, str):
             raise TypeError("timeunused has to be a string.")
         if not isinstance(regionid, str):
             raise TypeError("regionid has to be a string.")
 
-        timestationpackage = time.strftime("%Y-%m-%d+%H:%M", timestationpackage)
-        timelinepackage = time.strftime("%Y-%m-%d+%H:%M", timelinepackage)
+        timestationpackage = timestationpackage.strftime("%Y-%m-%d+%H:%M")
+        timelinepackage = timelinepackage.strftime("%Y-%m-%d+%H:%M")
 
         params = "regionID=" + regionid + "&time=" +\
                  timestationpackage + "$" + timelinepackage + "$" + timeunused
@@ -170,7 +170,7 @@ class RNVStartInfoApi:
         Parameters
         ----------
         hafas : id of requested station `str`.
-        timepoint : Timepoint of request `struct_time`.
+        timepoint : Timepoint of request `datetime.date`.
         transportFilter: Linenumber filter for result `str`.
         mode : "DEP" for departures, "ARR" for arrival `str`.
         poles : Limit request only to specified poles `list` of `str`.
@@ -231,8 +231,8 @@ class RNVStartInfoApi:
                 - ``displayTo``: Date until this information will be displayed (``date``).
         """
 
-        if not timepoint or not isinstance(timepoint, time):
-            raise ValueError("Time not specified or supplied in wrong format (Expected time object)")
+        if not timepoint or not isinstance(timepoint, datetime.date):
+            raise ValueError("Time not specified or supplied in wrong format (Expected datetime.date object)")
 
         if not isinstance(hafas, str) or not isinstance(mode, str) or not isinstance(needplatformdetail, str):
             raise ValueError("Not a valid hafas or mode or needplatfromdetail.")
@@ -241,7 +241,7 @@ class RNVStartInfoApi:
         if poles and not (isinstance(poles, list) and all(isinstance(elem, str) for elem in poles)):
             raise ValueError("Poles should be a list of strings.")
 
-        timepoint = time.strftime("%Y-%m-%d+%H:%M", timepoint)
+        timepoint = timepoint.strftime("%Y-%m-%d+%H:%M")
 
         params = "hafasID=" + hafas + "&time=" + timepoint + \
                  "&mode=" + mode + \
@@ -282,8 +282,8 @@ class RNVStartInfoApi:
             - ``directions``: Endstations of the tour (``str``).
         """
 
-        if not timepoint or not isinstance(timepoint, time):
-            raise ValueError("Time not specified or supplied in wrong format (Expected time object)")
+        if not timepoint or not isinstance(timepoint, datetime.date):
+            raise ValueError("Time not specified or supplied in wrong format (Expected datetime.date object)")
 
         if not isinstance(lineid, str) or not isinstance(tourid, str) or not isinstance(hafas, str) or \
                 not (tourtype == "452" or tourtype == "454"):
